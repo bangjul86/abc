@@ -19,7 +19,6 @@ contract BedrockStaking is Initializable, OwnableUpgradeSafe {
     address private _beneficiary;
 
     // Durations and timestamps are expressed in UNIX time, the same units as block.timestamp.
-    uint256 private _cliff;
     uint256 private _start;
     uint256 private _duration;
 
@@ -66,12 +65,5 @@ contract BedrockStaking is Initializable, OwnableUpgradeSafe {
         emit Staked(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
-        require(amount > 0, "Cannot withdraw 0");
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        stakingToken.safeTransfer(msg.sender, amount);
-        emit Withdrawn(msg.sender, amount);
-        }
 
     }
