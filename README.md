@@ -1,1 +1,2 @@
-# bedrock-staking
+# Bedrock-staking Contract
+## Bedrock helper Contract
