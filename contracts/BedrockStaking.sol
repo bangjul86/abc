@@ -11,6 +11,54 @@ contract BedrockStaking is Initializable, OwnableUpgradeSafe {
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+    IBEP20 BUSD = IBEP20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
+    address WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+    IDEXRouter router;
+
+    address[] shareholders;
+    mapping (address => uint256) shareholderIndexes;
+    mapping (address => uint256) shareholderClaims;
+
+    mapping (address => Share) public shares;
+
+    uint256 public totalShares;
+    uint256 public totalDividends;
+    uint256 public totalDistributed;
+    uint256 public dividendsPerShare;
+    uint256 public dividendsPerShareAccuracyFactor = 10 ** 36;
+
+    uint256 public minPeriod = 1 hours;
+    uint256 public minDistribution = 1 * (10 ** 18);
+
+    uint256 currentIndex;
+
+    bool initialized;
+    modifier initialization() {
+        require(!initialized);
+        _;
+        initialized = true;
+    }
+
+    modifier onlyToken() {
+        require(msg.sender == _token); _;
+    }
+
+    constructor (address _router) {
+        router = _router != address(0)
+        ? IDEXRouter(_router)
+        : IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        _token = msg.sender;
+    }
+
+    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external override onlyToken {
+        minPeriod = _minPeriod;
+        minDistribution = _minDistribution;
+    }
+
+    function setShare(address shareholder, uint256 amount) external override onlyToken {
+        if(shares[shareholder].amount > 0){
+            distributeDividend(shareholder);
+        }
 
     event TokensReleased(address token, uint256 amount);
     event TokenVestingRevoked(address token);
