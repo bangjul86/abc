@@ -12,7 +12,7 @@ contract BedrockStaking is Initializable, OwnableUpgradeSafe {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     IBEP20 BUSD = IBEP20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
-    address WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+    
     IDEXRouter router;
 
     address[] shareholders;
