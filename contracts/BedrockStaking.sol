@@ -46,7 +46,7 @@ contract BedrockStaking is Initializable, OwnableUpgradeSafe {
     constructor (address _router) {
         router = _router != address(0)
         ? IDEXRouter(_router)
-        : IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        : IDEXRouter(0x0000000000000000000000000000000000);
         _token = msg.sender;
     }
 
