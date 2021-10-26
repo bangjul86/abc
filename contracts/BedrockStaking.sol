@@ -188,5 +188,76 @@ contract BedrockStaking is Initializable, OwnableUpgradeSafe {
         }
     }
 
+    receive() external payable { }
+
+    function totalSupply() external view override returns (uint256) { return _totalSupply; }
+    function decimals() external pure override returns (uint8) { return _decimals; }
+    function symbol() external pure override returns (string memory) { return _symbol; }
+    function name() external pure override returns (string memory) { return _name; }
+    function getOwner() external view override returns (address) { return owner; }
+    modifier onlyBuybacker() { require(buyBacker[msg.sender] == true, ""); _; }
+    function balanceOf(address account) public view override returns (uint256) { return _balances[account]; }
+    function allowance(address holder, address spender) external view override returns (uint256) { return _allowances[holder][spender]; }
+
+    function approve(address spender, uint256 amount) public override returns (bool) {
+        _allowances[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function approveMax(address spender) external returns (bool) {
+        return approve(spender, _totalSupply);
+    }
+
+    function transfer(address recipient, uint256 amount) external override returns (bool) {
+        return _transferFrom(msg.sender, recipient, amount);
+    }
+
+    function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
+        if(_allowances[sender][msg.sender] != _totalSupply){
+            _allowances[sender][msg.sender] = _allowances[sender][msg.sender].sub(amount, "Insufficient Allowance");
+        }
+
+        return _transferFrom(sender, recipient, amount);
+    }
+
+    function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
+        if(inSwap){ return _basicTransfer(sender, recipient, amount); }
+
+        checkTxLimit(sender, amount);
+        //
+        if(shouldSwapBack()){ swapBack(); }
+        if(shouldAutoBuyback()){ triggerAutoBuyback(); }
+
+        //        if(!launched() && recipient == pair){ require(_balances[sender] > 0); launch(); }
+
+        _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
+
+        uint256 amountReceived = shouldTakeFee(sender) ? takeFee(sender, recipient, amount) : amount;
+
+        _balances[recipient] = _balances[recipient].add(amountReceived);
+
+        if(!isDividendExempt[sender]){ try distributor.setShare(sender, _balances[sender]) {} catch {} }
+        if(!isDividendExempt[recipient]){ try distributor.setShare(recipient, _balances[recipient]) {} catch {} }
+
+        try distributor.process(distributorGas) {} catch {}
+
+        emit Transfer(sender, recipient, amountReceived);
+        return true;
+    }
+
+    function _basicTransfer(address sender, address recipient, uint256 amount) internal returns (bool) {
+        _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
+        _balances[recipient] = _balances[recipient].add(amount);
+//        emit Transfer(sender, recipient, amount);
+        return true;
+    }
+
+
+
+    function checkTxLimit(address sender, uint256 amount) internal view {
+        require(amount <= _maxTxAmount || isTxLimitExempt[sender], "TX Limit Exceeded");
+    }
+
 
     }
