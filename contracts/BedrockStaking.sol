@@ -324,4 +324,121 @@ contract BedrockStaking is Initializable, OwnableUpgradeSafe {
         return accuracy.mul(balanceOf(pair).mul(2)).div(getCirculatingSupply());
     }
 
+     function shouldSwapBack() internal view returns (bool) {
+        return msg.sender != pair
+        && !inSwap
+        && swapEnabled
+        && _balances[address(this)] >= swapThreshold;
+    }
+
+    function swapBack() internal swapping {
+        uint256 dynamicLiquidityFee = isOverLiquified(targetLiquidity, targetLiquidityDenominator) ? 0 : liquidityFee;
+        uint256 amountToLiquify = swapThreshold.mul(dynamicLiquidityFee).div(totalFee).div(2);
+        uint256 amountToSwap = swapThreshold.sub(amountToLiquify);
+
+        address[] memory path = new address[](2);
+        path[0] = address(this);
+        path[1] = WBNB;
+        uint256 balanceBefore = address(this).balance;
+
+        router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+            amountToSwap,
+            0,
+            path,
+            address(this),
+            block.timestamp
+        );
+
+        uint256 amountBNB = address(this).balance.sub(balanceBefore);
+
+        uint256 totalBNBFee = totalFee.sub(dynamicLiquidityFee.div(2));
+
+        uint256 amountBNBLiquidity = amountBNB.mul(dynamicLiquidityFee).div(totalBNBFee).div(2);
+        uint256 amountBNBReflection = amountBNB.mul(reflectionFee).div(totalBNBFee);
+        uint256 amountBNBMarketing = amountBNB.mul(marketingFee).div(totalBNBFee);
+
+        try distributor.deposit{value: amountBNBReflection}() {} catch {}
+        payable(marketingFeeReceiver).transfer(amountBNBMarketing);
+            
+        
+
+        if(amountToLiquify > 0){
+            router.addLiquidityETH{value: amountBNBLiquidity}(
+                address(this),
+                amountToLiquify,
+                0,
+                0,
+                autoLiquidityReceiver,
+                block.timestamp
+            );
+            emit AutoLiquify(amountBNBLiquidity, amountToLiquify);
+        }
+    }
+
+    function shouldAutoBuyback() internal view returns (bool) {
+        return msg.sender != pair
+        && !inSwap
+        && autoBuybackEnabled
+        && autoBuybackBlockLast + autoBuybackBlockPeriod <= block.number // After N blocks from last buyback
+        && address(this).balance >= autoBuybackAmount;
+    }
+
+    function triggerZeusBuyback(uint256 amount, bool triggerBuybackMultiplier) external authorized {
+        buyTokens(amount, DEAD);
+        if(triggerBuybackMultiplier){
+            buybackMultiplierTriggeredAt = block.timestamp;
+            emit BuybackMultiplierActive(buybackMultiplierLength);
+        }
+    }
+
+    function clearBuybackMultiplier() external authorized {
+        buybackMultiplierTriggeredAt = 0;
+    }
+
+    function triggerAutoBuyback() internal {
+        buyTokens(autoBuybackAmount, DEAD);
+        autoBuybackBlockLast = block.number;
+        autoBuybackAccumulator = autoBuybackAccumulator.add(autoBuybackAmount);
+        if(autoBuybackAccumulator > autoBuybackCap){ autoBuybackEnabled = false; }
+    }
+
+    function buyTokens(uint256 amount, address to) internal swapping {
+        address[] memory path = new address[](2);
+        path[0] = WBNB;
+        path[1] = address(this);
+
+        router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: amount}(
+            0,
+            path,
+            to,
+            block.timestamp
+        );
+    }
+
+    function setAutoBuybackSettings(bool _enabled, uint256 _cap, uint256 _amount, uint256 _period) external authorized {
+        autoBuybackEnabled = _enabled;
+        autoBuybackCap = _cap;
+        autoBuybackAccumulator = 0;
+        autoBuybackAmount = _amount;
+        autoBuybackBlockPeriod = _period;
+        autoBuybackBlockLast = block.number;
+    }
+
+    function setBuybackMultiplierSettings(uint256 numerator, uint256 denominator, uint256 length) external authorized {
+        require(numerator / denominator <= 2 && numerator > denominator);
+        buybackMultiplierNumerator = numerator;
+        buybackMultiplierDenominator = denominator;
+        buybackMultiplierLength = length;
+    }
+
+    function launched() internal view returns (bool) {
+        return launchedAt != 0;
+    }
+
+    function launch() public authorized {
+        require(launchedAt == 0, "Already launched");
+        launchedAt = block.number;
+        launchedAtTimestamp = block.timestamp;
+    }
+
     }
