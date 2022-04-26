@@ -1,444 +1,481 @@
-pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
+// File: @openzeppelin/contracts/token/ERC20/IERC20.sol
 
 
-contract BedrockStaking is Initializable, OwnableUpgradeSafe {
+// OpenZeppelin Contracts (last updated v4.5.0) (token/ERC20/IERC20.sol)
+
+pragma solidity ^0.8.0;
+
+/**
+ * @dev Interface of the ERC20 standard as defined in the EIP.
+ */
+interface IERC20 {
+    /**
+     * @dev Returns the amount of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns the amount of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256);
+
+    /**
+     * @dev Moves `amount` tokens from the caller's account to `to`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address to, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
+     * zero by default.
+     *
+     * This value changes when {approve} or {transferFrom} are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * IMPORTANT: Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Moves `amount` tokens from `from` to `to` using the
+     * allowance mechanism. `amount` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool);
+
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+// File: @openzeppelin/contracts/utils/Context.sol
 
 
-    using SafeMath for uint256;
-    using SafeERC20 for IERC20;
-    IBEP20 BUSD = IBEP20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
-    
-    IDEXRouter router;
+// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 
-    address[] shareholders;
-    mapping (address => uint256) shareholderIndexes;
-    mapping (address => uint256) shareholderClaims;
+pragma solidity ^0.8.0;
 
-    mapping (address => Share) public shares;
+/**
+ * @dev Provides information about the current execution context, including the
+ * sender of the transaction and its data. While these are generally available
+ * via msg.sender and msg.data, they should not be accessed in such a direct
+ * manner, since when dealing with meta-transactions the account sending and
+ * paying for execution may not be the actual sender (as far as an application
+ * is concerned).
+ *
+ * This contract is only required for intermediate, library-like contracts.
+ */
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address) {
+        return msg.sender;
+    }
 
-    uint256 public totalShares;
-    uint256 public totalDividends;
-    uint256 public totalDistributed;
-    uint256 public dividendsPerShare;
-    uint256 public dividendsPerShareAccuracyFactor = 10 ** 36;
+    function _msgData() internal view virtual returns (bytes calldata) {
+        return msg.data;
+    }
+}
 
-    uint256 public minPeriod = 1 hours;
-    uint256 public minDistribution = 1 * (10 ** 18);
+// File: @openzeppelin/contracts/access/Ownable.sol
 
-    uint256 currentIndex;
 
-    bool initialized;
-    modifier initialization() {
-        require(!initialized);
+// OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
+
+pragma solidity ^0.8.0;
+
+
+/**
+ * @dev Contract module which provides a basic access control mechanism, where
+ * there is an account (an owner) that can be granted exclusive access to
+ * specific functions.
+ *
+ * By default, the owner account will be the one that deploys the contract. This
+ * can later be changed with {transferOwnership}.
+ *
+ * This module is used through inheritance. It will make available the modifier
+ * `onlyOwner`, which can be applied to your functions to restrict their use to
+ * the owner.
+ */
+abstract contract Ownable is Context {
+    address private _owner;
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    /**
+     * @dev Initializes the contract setting the deployer as the initial owner.
+     */
+    constructor() {
+        _transferOwnership(_msgSender());
+    }
+
+    /**
+     * @dev Returns the address of the current owner.
+     */
+    function owner() public view virtual returns (address) {
+        return _owner;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(owner() == _msgSender(), "Ownable: caller is not the owner");
         _;
+    }
+
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions anymore. Can only be called by the current owner.
+     *
+     * NOTE: Renouncing ownership will leave the contract without an owner,
+     * thereby removing any functionality that is only available to the owner.
+     */
+    function renounceOwnership() public virtual onlyOwner {
+        _transferOwnership(address(0));
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        _transferOwnership(newOwner);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Internal function without access restriction.
+     */
+    function _transferOwnership(address newOwner) internal virtual {
+        address oldOwner = _owner;
+        _owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
+    }
+}
+
+// File: RockStake.sol
+
+
+pragma solidity ^0.8.2;
+
+
+
+contract RockStake is Ownable {
+    struct Stake {
+        address owner;
+        uint256 amount;
+        uint256 time;
+        uint256 endsAt;
+        uint256 dailyReward;
+        uint256 daysToReward;
+        uint256 lastRewardClaimAt;
+    }
+
+    struct Reward {
+        uint256 oneMonth;
+        uint256 threeMonth;
+        uint256 sixMonth;
+        uint256 oneYear;
+    }
+    Reward public tokenRewards;
+
+    // Time durations in seconds
+    uint256 oneMonth;
+    uint256 threeMonths;
+    uint256 sixMonths;
+    uint256 oneYear;
+
+    // State level dynamics
+    IERC20 public token;
+    address public rewardsWallet;
+    address public stakesWallet;
+    bool public initialized;
+    uint256 public minimumStakingAmount;
+    uint256 public totalStaked;
+    uint256 public currentlyStaked;
+
+    // Stakes by the user
+    mapping(bytes32 => Stake) public stakes;
+    mapping(address => uint256) public totalUserStakes;
+    mapping(address => bytes32[]) public userStakes;
+
+    event Staked(
+        address indexed staker,
+        bytes32 stakeId,
+        uint256 amount,
+        uint256 endsAt
+    );
+
+    event Unstaked(address indexed staker, bytes32 stakeId, uint256 amount);
+
+    constructor(IERC20 _token) {
+        initialized = false;
+        token = _token;
+    }
+
+    function setRewardsWallet(address newWallet) public onlyOwner {
+        rewardsWallet = newWallet;
+    }
+
+    function setStakesWallet(address newWallet) public onlyOwner {
+        stakesWallet = newWallet;
+    }
+
+    /**
+     * Set up the staking smart contract
+     *
+     * @param _amount Initial amount how many tokens are staked at once
+     * @param _oneMonth initial One Month staking Reward
+     * @param _threeMonth initial three Months staking Reward
+     * @param _sixMonth initial six Months staking Reward
+     * @param _oneYear initial One Year staking Reward
+     */
+    function initializeStakingContract(
+        uint256 _amount,
+        uint256 _oneMonth,
+        uint256 _threeMonth,
+        uint256 _sixMonth,
+        uint256 _oneYear,
+        uint256 _oneMonthTime
+    ) external onlyOwner {
+        require(initialized == false, "Contract is already initialized");
+        setMinimumStakingAmount(_amount);
+        setRewardParameters(_oneMonth, _threeMonth, _sixMonth, _oneYear);
         initialized = true;
+
+        oneMonth = _oneMonthTime;
+        threeMonths = _oneMonthTime * 3;
+        sixMonths = _oneMonthTime * 6;
+        oneYear = _oneMonthTime * 12;
     }
 
-    modifier onlyToken() {
-        require(msg.sender == _token); _;
+    function changeTimeLimits(uint256 _oneMonth) public onlyOwner {
+        oneMonth = _oneMonth;
+        threeMonths = _oneMonth * 3;
+        sixMonths = _oneMonth * 6;
+        oneYear = _oneMonth * 12;
     }
 
-    constructor (address _router) {
-        router = _router != address(0)
-        ? IDEXRouter(_router)
-        : IDEXRouter(0x0000000000000000000000000000000000);
-        _token = msg.sender;
+    function setRewardParameters(
+        uint256 _oneMonth,
+        uint256 _threeMonth,
+        uint256 _sixMonth,
+        uint256 _oneYear
+    ) public onlyOwner {
+        require(
+            _oneMonth > 0 && _threeMonth > 0 && _sixMonth > 0 && _oneYear > 0,
+            "One of the Rewards is zero"
+        );
+        tokenRewards.oneMonth = _oneMonth;
+        tokenRewards.threeMonth = _threeMonth;
+        tokenRewards.sixMonth = _sixMonth;
+        tokenRewards.oneYear = _oneYear;
     }
 
-    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external override onlyToken {
-        minPeriod = _minPeriod;
-        minDistribution = _minDistribution;
+    /**
+     * owner can adjust required stake amount and duration.
+     */
+    function setMinimumStakingAmount(uint256 _amount) public onlyOwner {
+        require(_amount > 0, "Amount cannot be zero");
+        minimumStakingAmount = _amount;
     }
 
-    function setShare(address shareholder, uint256 amount) external override onlyToken {
-        if(shares[shareholder].amount > 0){
-            distributeDividend(shareholder);
+    /**
+     * Stake tokens sent on the contract.
+     *
+     * @param stakeId bytes32 Id generated from amount and address of staker
+     * @param staker On whose behalf we are staking
+     * @param amount Amount of tokens to stake
+     */
+    function _stakeInternal(
+        bytes32 stakeId,
+        address staker,
+        uint256 amount,
+        uint256 _stakingTime
+    ) internal {
+        uint256 endsAt = block.timestamp + _stakingTime;
+
+        uint256 dailyReward = 0;
+        if (_stakingTime == oneMonth) {
+            dailyReward = amount * tokenRewards.oneMonth / 100 / (30 * 1);
+        } else if (_stakingTime == threeMonths) {
+            dailyReward = amount * tokenRewards.threeMonth / 100 / (30 * 3);
+        } else if (_stakingTime == sixMonths) {
+            dailyReward = amount * tokenRewards.sixMonth / 100 / (30 * 6);
+        } else if (_stakingTime == oneYear) {
+            dailyReward = amount * tokenRewards.oneYear / 100 / (30 * 12);
         }
 
-    event TokensReleased(address token, uint256 amount);
-    event TokenVestingRevoked(address token);
+        stakes[stakeId] = Stake(
+            staker,
+            amount,
+            _stakingTime,
+            endsAt,
+            dailyReward,
+            _stakingTime / oneMonth * 30,
+            block.timestamp
+        );
+        userStakes[staker].push(stakeId);
+        totalUserStakes[staker]++;
+        totalStaked += amount;
+        currentlyStaked += amount;
 
-    
-    address private _beneficiary;
-
-    // Durations and timestamps are expressed in UNIX time, the same units as block.timestamp.
-    uint256 private _start;
-    uint256 private _duration;
-
-    bool private _revocable;
-
-    mapping (address => uint256) private _released;
-    mapping (address => bool) private _revoked;
-
-
-
-    function __TokenVesting_init(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) internal initializer {
-        __Context_init_unchained();
-        __Ownable_init_unchained();
-        __TokenVesting_init_unchained(beneficiary, start, cliffDuration, duration, revocable);
+        emit Staked(staker, stakeId, amount, endsAt);
     }
 
-    function init(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) public initializer {
-        __TokenVesting_init(beneficiary, start, cliffDuration, duration, revocable);
+    /**
+     * Return data for a single stake.
+     */
+    function getStakeInformation(bytes32 stakeId)
+        public
+        view
+        returns (
+            address staker,
+            uint256 amount,
+            uint256 stakingPeriod,
+            uint256 endsAt,
+            uint256 dailyReward,
+            uint256 remainingDailyRewards,
+            uint256 lastRewardClaimTime
+        )
+    {
+        Stake memory s = stakes[stakeId];
+        return (s.owner, s.amount, s.time, s.endsAt, s.dailyReward, s.daysToReward, s.lastRewardClaimAt);
+    }
+
+    /**
+     * Check if a stakeId has been allocated
+     */
+    function isStake(bytes32 stakeId) public view returns (bool) {
+        return stakes[stakeId].owner != address(0x0);
+    }
+
+    /**
+     * Return true if the user has still tokens in the staking contract for a previous stake.
+     */
+    function isStillStaked(bytes32 stakeId) public view returns (bool) {
+        return stakes[stakeId].endsAt != 0;
+    }
+
+    /**
+     * Send tokens back to the staker.
+     *@param stakeId bytes32 Id of Stake recieved on staking
+     */
+    function unstake(bytes32 stakeId) public {
+        Stake memory s = stakes[stakeId];
+
+        require(s.endsAt != 0, "Already unstaked");
+        require(_msgSender() == s.owner, "Only owner can unstake");
+        require(s.endsAt <= block.timestamp, "Cannot unstake before time");
+
+        if (s.daysToReward > 0) {
+            claimRewards(stakeId);
+        }
+
+        // Mark the stake released
+        stakes[stakeId].endsAt = 0;
+        stakes[stakeId].amount = 0;
+        stakes[stakeId].time = 0;
+        stakes[stakeId].daysToReward = 0;
+        currentlyStaked -= s.amount;
+        totalUserStakes[msg.sender]--;
+
+        emit Unstaked(s.owner, stakeId, s.amount);
+
+        // Use ERC-20 to transfer tokens to the wallet of the owner
+        token.transferFrom(stakesWallet, s.owner, s.amount);
+    }
+
+    /**
+     * Allow staker to cash out their daily rewards
+     *@param stakeId bytes32 Id of Stake recieved on staking
+     */
+    function claimRewards(bytes32 stakeId) public {
+        Stake memory s = stakes[stakeId];
+
+        require(s.endsAt != 0, "Already unstaked");
+        require(_msgSender() == s.owner, "Only owner can claim");
+        require(s.daysToReward > 0, "You have already claimed all the daily rewards in this stake");
+
+        uint256 daysUnclaimed = (block.timestamp - s.lastRewardClaimAt) /
+            (oneMonth / 30);
         
-    }
-
-    function __TokenVesting_init_unchained(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) internal initializer {
-
-
-        require(beneficiary != address(0), "TokenVesting: beneficiary is the zero address");
-        // solhint-disable-next-line max-line-length
-        require(cliffDuration <= duration, "TokenVesting: cliff is longer than duration");
-        require(duration > 0, "TokenVesting: duration is 0");
-        // solhint-disable-next-line max-line-length
-        require(start.add(duration) > block.timestamp, "TokenVesting: final time is before current time");
-
-        _beneficiary = beneficiary;
-        _revocable = revocable;
-        _duration = duration;
-        _cliff = start.add(cliffDuration);
-        _start = start;
-    
-
-        function stake(uint256 amount) external nonReentrant notPaused updateReward(msg.sender) {
-        require(amount > 0, "Cannot stake 0");
-        _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        emit Staked(msg.sender, amount);
-    }
-
-    if(amount > 0 && shares[shareholder].amount == 0){
-            addShareholder(shareholder);
-        }else if(amount == 0 && shares[shareholder].amount > 0){
-            removeShareholder(shareholder);
+        if (s.daysToReward < daysUnclaimed) {
+            daysUnclaimed = s.daysToReward;
         }
 
-        totalShares = totalShares.sub(shares[shareholder].amount).add(amount);
-        shares[shareholder].amount = amount;
-        shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
+        require(daysUnclaimed > 0, "Wait at least 1 day to claim rewards");
+
+        // Use ERC-20 to transfer reward tokens to the wallet of the owner
+        token.transferFrom(rewardsWallet, s.owner, daysUnclaimed * s.dailyReward);
+        stakes[stakeId].lastRewardClaimAt = s.lastRewardClaimAt + daysUnclaimed * (oneMonth / 30);
+        stakes[stakeId].daysToReward -= daysUnclaimed;
     }
 
-    function deposit() external payable override onlyToken {
-        uint256 balanceBefore = BUSD.balanceOf(address(this));
+    function _keyGen(address sender, uint256 amount)
+        internal
+        pure
+        returns (bytes32)
+    {
+        bytes32 uid = keccak256(abi.encodePacked(sender, amount));
+        return uid;
+    }
 
-        address[] memory path = new address[](2);
-        path[0] = WBNB;
-        path[1] = address(BUSD);
-
-        router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: msg.value}(
-            0,
-            path,
-            address(this),
-            block.timestamp
+    function stake(uint256 amount, uint256 _time) public {
+        require(
+            _time == oneMonth ||
+                _time == threeMonths ||
+                _time == sixMonths ||
+                _time == oneYear,
+            "Staking Time should be in time limits defined"
+        );
+        require(
+            amount >= minimumStakingAmount,
+            "Staking must be greater then or equal to Minimum Staking Amount"
+        );
+        require(
+            token.allowance(msg.sender, address(this)) >= amount,
+            "Staking amount not approved"
         );
 
-        uint256 amount = BUSD.balanceOf(address(this)).sub(balanceBefore);
-
-        totalDividends = totalDividends.add(amount);
-        dividendsPerShare = dividendsPerShare.add(dividendsPerShareAccuracyFactor.mul(amount).div(totalShares));
+        token.transferFrom(msg.sender, stakesWallet, amount);
+        bytes32 stakeId = _keyGen(msg.sender, block.timestamp);
+        _stakeInternal(stakeId, msg.sender, amount, _time);
     }
-
-    function process(uint256 gas) external override onlyToken {
-        uint256 shareholderCount = shareholders.length;
-
-        if(shareholderCount == 0) { return; }
-
-        uint256 gasUsed = 0;
-        uint256 gasLeft = gasleft();
-
-        uint256 iterations = 0;
-
-        while(gasUsed < gas && iterations < shareholderCount) {
-            if(currentIndex >= shareholderCount){
-                currentIndex = 0;
-            }
-
-            if(shouldDistribute(shareholders[currentIndex])){
-                distributeDividend(shareholders[currentIndex]);
-            }
-
-            gasUsed = gasUsed.add(gasLeft.sub(gasleft()));
-            gasLeft = gasleft();
-            currentIndex++;
-            iterations++;
-        }
-    }
-
-    function shouldDistribute(address shareholder) internal view returns (bool) {
-        return shareholderClaims[shareholder] + minPeriod < block.timestamp
-        && getUnpaidEarnings(shareholder) > minDistribution;
-    }
-
-    function distributeDividend(address shareholder) internal {
-        if(shares[shareholder].amount == 0){ return; }
-
-        uint256 amount = getUnpaidEarnings(shareholder);
-        if(amount > 0){
-            totalDistributed = totalDistributed.add(amount);
-            BUSD.transfer(shareholder, amount);
-            shareholderClaims[shareholder] = block.timestamp;
-            shares[shareholder].totalRealised = shares[shareholder].totalRealised.add(amount);
-            shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
-        }
-    }
-
-    receive() external payable { }
-
-    function totalSupply() external view override returns (uint256) { return _totalSupply; }
-    function decimals() external pure override returns (uint8) { return _decimals; }
-    function symbol() external pure override returns (string memory) { return _symbol; }
-    function name() external pure override returns (string memory) { return _name; }
-    function getOwner() external view override returns (address) { return owner; }
-    modifier onlyBuybacker() { require(buyBacker[msg.sender] == true, ""); _; }
-    function balanceOf(address account) public view override returns (uint256) { return _balances[account]; }
-    function allowance(address holder, address spender) external view override returns (uint256) { return _allowances[holder][spender]; }
-
-    function approve(address spender, uint256 amount) public override returns (bool) {
-        _allowances[msg.sender][spender] = amount;
-        emit Approval(msg.sender, spender, amount);
-        return true;
-    }
-
-    function approveMax(address spender) external returns (bool) {
-        return approve(spender, _totalSupply);
-    }
-
-    function transfer(address recipient, uint256 amount) external override returns (bool) {
-        return _transferFrom(msg.sender, recipient, amount);
-    }
-
-    function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
-        if(_allowances[sender][msg.sender] != _totalSupply){
-            _allowances[sender][msg.sender] = _allowances[sender][msg.sender].sub(amount, "Insufficient Allowance");
-        }
-
-        return _transferFrom(sender, recipient, amount);
-    }
-
-    function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
-        if(inSwap){ return _basicTransfer(sender, recipient, amount); }
-
-        checkTxLimit(sender, amount);
-        //
-        if(shouldSwapBack()){ swapBack(); }
-        if(shouldAutoBuyback()){ triggerAutoBuyback(); }
-
-        //        if(!launched() && recipient == pair){ require(_balances[sender] > 0); launch(); }
-
-        _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
-
-        uint256 amountReceived = shouldTakeFee(sender) ? takeFee(sender, recipient, amount) : amount;
-
-        _balances[recipient] = _balances[recipient].add(amountReceived);
-
-        if(!isDividendExempt[sender]){ try distributor.setShare(sender, _balances[sender]) {} catch {} }
-        if(!isDividendExempt[recipient]){ try distributor.setShare(recipient, _balances[recipient]) {} catch {} }
-
-        try distributor.process(distributorGas) {} catch {}
-
-        emit Transfer(sender, recipient, amountReceived);
-        return true;
-    }
-
-    function _basicTransfer(address sender, address recipient, uint256 amount) internal returns (bool) {
-        _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
-        _balances[recipient] = _balances[recipient].add(amount);
-//        emit Transfer(sender, recipient, amount);
-        return true;
-    }
-
-
-
-    function checkTxLimit(address sender, uint256 amount) internal view {
-        require(amount <= _maxTxAmount || isTxLimitExempt[sender], "TX Limit Exceeded");
-    }
-
-    function setTxLimit(uint256 amount) external authorized {
-        require(amount >= _totalSupply / 1000);
-        _maxTxAmount = amount;
-    }
-
-    function setIsDividendExempt(address holder, bool exempt) external authorized {
-        require(holder != address(this) && holder != pair);
-        isDividendExempt[holder] = exempt;
-        if(exempt){
-            distributor.setShare(holder, 0);
-        }else{
-            distributor.setShare(holder, _balances[holder]);
-        }
-    }
-
-    function setIsFeeExempt(address holder, bool exempt) external authorized {
-        isFeeExempt[holder] = exempt;
-    }
-
-    function setIsTxLimitExempt(address holder, bool exempt) external authorized {
-        isTxLimitExempt[holder] = exempt;
-    }
-
-    function setFees(uint256 _liquidityFee, uint256 _buybackFee, uint256 _reflectionFee, uint256 _marketingFee, uint256 _feeDenominator) external authorized {
-        liquidityFee = _liquidityFee;
-        buybackFee = _buybackFee;
-        reflectionFee = _reflectionFee;
-        marketingFee = _marketingFee;
-        totalFee = _liquidityFee.add(_buybackFee).add(_reflectionFee).add(_marketingFee);
-        feeDenominator = _feeDenominator;
-        require(totalFee < feeDenominator/4);
-    }
-
-    function setFeeReceivers(address _autoLiquidityReceiver, address _marketingFeeReceiver) external authorized {
-        autoLiquidityReceiver = _autoLiquidityReceiver;
-        marketingFeeReceiver = _marketingFeeReceiver;
-    }
-
-    function setSwapBackSettings(bool _enabled, uint256 _amount) external authorized {
-        swapEnabled = _enabled;
-        swapThreshold = _amount;
-    }
-
-    function setTargetLiquidity(uint256 _target, uint256 _denominator) external authorized {
-        targetLiquidity = _target;
-        targetLiquidityDenominator = _denominator;
-    }
-
-    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external authorized {
-        distributor.setDistributionCriteria(_minPeriod, _minDistribution);
-    }
-
-    function setDistributorSettings(uint256 gas) external authorized {
-        require(gas < 750000);
-        distributorGas = gas;
-    }
-
-    function getCirculatingSupply() public view returns (uint256) {
-        return _totalSupply.sub(balanceOf(DEAD)).sub(balanceOf(ZERO));
-    }
-
-    function getLiquidityBacking(uint256 accuracy) public view returns (uint256) {
-        return accuracy.mul(balanceOf(pair).mul(2)).div(getCirculatingSupply());
-    }
-
-     function shouldSwapBack() internal view returns (bool) {
-        return msg.sender != pair
-        && !inSwap
-        && swapEnabled
-        && _balances[address(this)] >= swapThreshold;
-    }
-
-    function swapBack() internal swapping {
-        uint256 dynamicLiquidityFee = isOverLiquified(targetLiquidity, targetLiquidityDenominator) ? 0 : liquidityFee;
-        uint256 amountToLiquify = swapThreshold.mul(dynamicLiquidityFee).div(totalFee).div(2);
-        uint256 amountToSwap = swapThreshold.sub(amountToLiquify);
-
-        address[] memory path = new address[](2);
-        path[0] = address(this);
-        path[1] = WBNB;
-        uint256 balanceBefore = address(this).balance;
-
-        router.swapExactTokensForETHSupportingFeeOnTransferTokens(
-            amountToSwap,
-            0,
-            path,
-            address(this),
-            block.timestamp
-        );
-
-        uint256 amountBNB = address(this).balance.sub(balanceBefore);
-
-        uint256 totalBNBFee = totalFee.sub(dynamicLiquidityFee.div(2));
-
-        uint256 amountBNBLiquidity = amountBNB.mul(dynamicLiquidityFee).div(totalBNBFee).div(2);
-        uint256 amountBNBReflection = amountBNB.mul(reflectionFee).div(totalBNBFee);
-        uint256 amountBNBMarketing = amountBNB.mul(marketingFee).div(totalBNBFee);
-
-        try distributor.deposit{value: amountBNBReflection}() {} catch {}
-        payable(marketingFeeReceiver).transfer(amountBNBMarketing);
-            
-        
-
-        if(amountToLiquify > 0){
-            router.addLiquidityETH{value: amountBNBLiquidity}(
-                address(this),
-                amountToLiquify,
-                0,
-                0,
-                autoLiquidityReceiver,
-                block.timestamp
-            );
-            emit AutoLiquify(amountBNBLiquidity, amountToLiquify);
-        }
-    }
-
-    function shouldAutoBuyback() internal view returns (bool) {
-        return msg.sender != pair
-        && !inSwap
-        && autoBuybackEnabled
-        && autoBuybackBlockLast + autoBuybackBlockPeriod <= block.number // After N blocks from last buyback
-        && address(this).balance >= autoBuybackAmount;
-    }
-
-    function triggerZeusBuyback(uint256 amount, bool triggerBuybackMultiplier) external authorized {
-        buyTokens(amount, DEAD);
-        if(triggerBuybackMultiplier){
-            buybackMultiplierTriggeredAt = block.timestamp;
-            emit BuybackMultiplierActive(buybackMultiplierLength);
-        }
-    }
-
-    function clearBuybackMultiplier() external authorized {
-        buybackMultiplierTriggeredAt = 0;
-    }
-
-    function triggerAutoBuyback() internal {
-        buyTokens(autoBuybackAmount, DEAD);
-        autoBuybackBlockLast = block.number;
-        autoBuybackAccumulator = autoBuybackAccumulator.add(autoBuybackAmount);
-        if(autoBuybackAccumulator > autoBuybackCap){ autoBuybackEnabled = false; }
-    }
-
-    function buyTokens(uint256 amount, address to) internal swapping {
-        address[] memory path = new address[](2);
-        path[0] = WBNB;
-        path[1] = address(this);
-
-        router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: amount}(
-            0,
-            path,
-            to,
-            block.timestamp
-        );
-    }
-
-    function setAutoBuybackSettings(bool _enabled, uint256 _cap, uint256 _amount, uint256 _period) external authorized {
-        autoBuybackEnabled = _enabled;
-        autoBuybackCap = _cap;
-        autoBuybackAccumulator = 0;
-        autoBuybackAmount = _amount;
-        autoBuybackBlockPeriod = _period;
-        autoBuybackBlockLast = block.number;
-    }
-
-    function setBuybackMultiplierSettings(uint256 numerator, uint256 denominator, uint256 length) external authorized {
-        require(numerator / denominator <= 2 && numerator > denominator);
-        buybackMultiplierNumerator = numerator;
-        buybackMultiplierDenominator = denominator;
-        buybackMultiplierLength = length;
-    }
-
-    function launched() internal view returns (bool) {
-        return launchedAt != 0;
-    }
-
-    function launch() public authorized {
-        require(launchedAt == 0, "Already launched");
-        launchedAt = block.number;
-        launchedAtTimestamp = block.timestamp;
-    }
-
-    }
+}
