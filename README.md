@@ -45,7 +45,7 @@
 Contract Address 
 
 
-    0x6b3198d1a1b29156A2a99f01948e298A64bb86a3
+    0xf6aF8E8a436A036E763928dCF96f2B367e8E25B3
 
       
      
@@ -68,11 +68,12 @@ Blockchain technology enables decentralized applications (DApps) or smart contra
 
 ## About The Project
 
-Front-running and malicious node/validator resistant smart contract, written in Solidity to register vanity names/domains on EVM Blockchains.
-An unregistered name can be registered for a certain amount of time by locking a certain balance of an account. After the registration expires,
- the account loses ownership of the name and his balance is unlocked. The registration can be renewed by making an on-chain call to keep the 
- name registered and balance locked. The fee to register the name depends directly on the size of the name. Also, a malicious node/validator 
- should not be able to front-run the process by censoring transactions of an honest user and registering its name in its own public address.
+Staking smart contract,EVM Compatible
+Generate APY in 4 terms.
+  a. One Month
+  b. Three Months
+  c. Six Months
+  d. One Year
 
 
 
@@ -85,7 +86,6 @@ An unregistered name can be registered for a certain amount of time by locking a
 * [Solidity](https://docs.soliditylang.org/en/v0.8.14/)
 * [Node.js](https://nodejs.org/en/docs/)
 * [Openzeppelin](https://www.openzeppelin.com/)
-* [Chainlink-Oracle](https://docs.chain.link/docs/chainlink-keepers/register-upkeep/)
 * [Truffle Suite](https://trufflesuite.com/)
 * [Hardhat](https://hardhat.org/)
 * [Ehers.js](https://docs.ethers.io/v5/)
@@ -116,7 +116,7 @@ This is an example of how to list things you need to use the software and how to
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/rafiul86/Name-Registry-Smart-Contract.git
+   git clone https://github.com/rafiulhc/bedrock-staking
    ```
 2. Install NPM packages
    ```sh
@@ -184,9 +184,9 @@ None
 
 Rafiul Hasan - [Linkedin](https://www.linkedin.com/in/hrafiul/)
                [Twitter](https://twitter.com/r_hasan_c)
-               - rafiulhasan86@gmail.com
+               - rafiul.hasan.chowdhury@gmail.com
 
-Project Link: [https://github.com/rafiul86/Name-Registry-Smart-Contract](https://github.com/rafiul86/Name-Registry-Smart-Contract)
+Project Link: [https://github.com/rafiulhc/bedrock-staking](https://github.com/rafiulhc/bedrock-staking)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
