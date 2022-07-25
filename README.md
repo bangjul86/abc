@@ -41,7 +41,7 @@
 </details>
 
 
-### Smart Contract Deplyed to Ethereum Mainnet, Binance Smart Chain, Fantop Opera and Avalanche X-Chain
+### Smart Contract Deplyed to Ethereum Mainnet, Binance Smart Chain, Fantop Opera and Avalanche C-Chain
 Contract Address 
 
 
@@ -55,7 +55,7 @@ Contract Address
 ![stsking](https://user-images.githubusercontent.com/68476971/180765484-16ca27a5-0dd8-4c1d-97d3-c7f6c5d5e605.png)
 
 
-### Smart Contract Registered to Oracle testnet for checking expiration of name registration after every 24 hours automatically
+### Smart Contract written in solidity
 
 
 
@@ -63,7 +63,7 @@ Contract Address
 <!-- ABOUT THE PROJECT -->
 ## Inspiration
 
-Blockchain technology enables decentralized applications (DApps) or smart contracts. Staking is an amazing opportunity in Blockhain space which enable users to stake their asset/token to get APY%.
+Blockchain technology enables decentralized applications (DApps) or smart contracts. Staking is an amazing opportunity in Blockchain space which enable users to stake their asset/token to get APY%.
 
 
 ## About The Project
@@ -128,7 +128,7 @@ Change the secret variables as process.env.SECRET_KEY and process.env.ALCHEMY pr
 
 ```npm install
   npx hardhat compile
-  npx hardhat run --network rinkeby scripts/deploy.js
+  npx hardhat run --network mainnet scripts/deploy.js
   ```
 
 ![Secret Variables](https://user-images.githubusercontent.com/68476971/169951589-da24b489-0cb6-44f8-a1fb-f9f02afca154.png)
