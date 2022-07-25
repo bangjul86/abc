@@ -52,31 +52,18 @@ Contract Address
 
 
 
-![deployed_to_rinkeby_testnet](https://user-images.githubusercontent.com/68476971/169980483-53b8974d-aa37-4c77-bbfb-2ef5708cf5e9.png)
+![stsking](https://user-images.githubusercontent.com/68476971/180765484-16ca27a5-0dd8-4c1d-97d3-c7f6c5d5e605.png)
 
 
 ### Smart Contract Registered to Oracle testnet for checking expiration of name registration after every 24 hours automatically
 
-Step: 1
 
-![Chainlink_upkeep](https://user-images.githubusercontent.com/68476971/169981854-d403bdfa-a1be-4ade-8e2d-ab7b1184b0fd.png)
-
-Step: 2
-
-![Chainlink](https://user-images.githubusercontent.com/68476971/169982003-f7a77a4e-9352-4761-8a15-6fb421b8817f.png)
-
-Step: 3
-
-![Active Oracle](https://user-images.githubusercontent.com/68476971/169982149-bdfb5a03-f15a-4e47-8e5a-e1cc67f545e7.png)
 
 
 <!-- ABOUT THE PROJECT -->
 ## Inspiration
 
-Blockchain technology enables decentralized applications (DApps) or smart contracts. Function calls (or transactions) to the DApp are processed by a decentralized network. Transactions are finalized in stages: they (generally) first relay around the network, then are selected by a miner and put into a valid block, and finally, the block is well-enough incorporated in the blockchain that is unlikely to be changed. Front-running is an attack where a malicious node observes a transaction after it is broadcast but before it is finalized, and attempts to have its own transaction confirmed before or instead of the observed transaction.
-
-In this application I followed Consensys provided guideline to prevent frontrun and malicious activities by validator. Suggestion is to store 
-the keccak256 hash of the data in the first transaction, then reveal the data and verify it against the hash in the second transaction. 
+Blockchain technology enables decentralized applications (DApps) or smart contracts. Staking is an amazing opportunity in Blockhain space which enable users to stake their asset/token to get APY%
 
 
 ## About The Project
