@@ -63,12 +63,12 @@ Contract Address
 <!-- ABOUT THE PROJECT -->
 ## Inspiration
 
-Blockchain technology enables decentralized applications (DApps) or smart contracts. Staking is an amazing opportunity in Blockhain space which enable users to stake their asset/token to get APY%
+Blockchain technology enables decentralized applications (DApps) or smart contracts. Staking is an amazing opportunity in Blockhain space which enable users to stake their asset/token to get APY%.
 
 
 ## About The Project
 
-Staking smart contract,EVM Compatible
+Staking smart contract, EVM Compatible
 Generate APY in 4 terms.
   a. One Month
   b. Three Months
