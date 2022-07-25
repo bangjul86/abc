@@ -41,7 +41,7 @@
 </details>
 
 
-### Smart Contract Deplyed to Ethereum Rinkeby Testnet 
+### Smart Contract Deplyed to Ethereum Mainnet, Binance Smart Chain, Fantop Opera and Avalanche X-Chain
 Contract Address 
 
 
