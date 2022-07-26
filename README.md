@@ -186,7 +186,7 @@ Rafiul Hasan - [Linkedin](https://www.linkedin.com/in/hrafiul/)
                [Twitter](https://twitter.com/r_hasan_c)
                - rafiul.hasan.chowdhury@gmail.com
 
-Project Link: [https://github.com/rafiulhc/bedrock-staking](https://github.com/rafiulhc/bedrock-staking)
+Project Link: [https://github.com/rafiulhc/crypto-staking-smart-contract.git](https://github.com/rafiulhc/crypto-staking-smart-contract.git
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
