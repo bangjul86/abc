@@ -190,7 +190,7 @@ pragma solidity ^0.8.2;
 
 
 
-contract BedRockStake is Ownable {
+contract StakeToken is Ownable {
     struct Stake {
         address owner;
         uint256 amount;
@@ -209,13 +209,13 @@ contract BedRockStake is Ownable {
     }
     Reward public tokenRewards;
 
-    // Time durations * seconds
+    // Time durations multiply by seconds
     uint256 oneMonth;
     uint256 threeMonths;
     uint256 sixMonths;
     uint256 oneYear;
 
-    // State level variables
+    // State level variables for the contract
     IERC20 public token;
     address public rewardsWallet;
     address public stakesWallet;
@@ -224,7 +224,7 @@ contract BedRockStake is Ownable {
     uint256 public totalStaked;
     uint256 public currentlyStaked;
 
-    // Stakes by the user
+    // Stakes by the user indexed by address
     mapping(bytes32 => Stake) public stakes;
     mapping(address => uint256) public totalUserStakes;
     mapping(address => bytes32[]) public userStakes;
@@ -268,7 +268,7 @@ contract BedRockStake is Ownable {
         uint256 _oneYear,
         uint256 _oneMonthTime
     ) external onlyOwner {
-        require(initialized == false, "Contract is already initialized");
+        require(initialized == false, "Contract initialized already");
         setMinimumStakingAmount(_amount);
         setRewardParameters(_oneMonth, _threeMonth, _sixMonth, _oneYear);
         initialized = true;
@@ -306,7 +306,7 @@ contract BedRockStake is Ownable {
      * owner can adjust required stake amount and duration.
      */
     function setMinimumStakingAmount(uint256 _amount) public onlyOwner {
-        require(_amount > 0, "Amount cannot be zero");
+        require(_amount > 0, "Amount cannot be zero, please input valid amount");
         minimumStakingAmount = _amount;
     }
 
@@ -396,7 +396,7 @@ contract BedRockStake is Ownable {
 
         require(s.endsAt != 0, "Already unstaked");
         require(_msgSender() == s.owner, "Only owner can unstake");
-        require(s.endsAt <= block.timestamp, "Cannot unstake before time");
+        require(s.endsAt <= block.timestamp, "Cannot unstake before maturity");
 
         if (s.daysToReward > 0) {
             claimRewards(stakeId);
@@ -429,7 +429,7 @@ contract BedRockStake is Ownable {
 
         uint256 daysUnclaimed = (block.timestamp - s.lastRewardClaimAt) /
             (oneMonth / 30);
-        
+
         if (s.daysToReward < daysUnclaimed) {
             daysUnclaimed = s.daysToReward;
         }
