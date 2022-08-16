@@ -1,3 +1,4 @@
+// SPDX license identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
 /**
@@ -186,7 +187,7 @@ abstract contract Ownable is Context {
 // File: RockStake.sol
 
 
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.0;
 
 
 

@@ -4,7 +4,7 @@ require('dotenv').config();
 
 module.exports = {
   contracts_build_directory: "./build",
-  
+
   networks: {
     development: {
       host: "127.0.0.1",     // Localhost (default: none)
@@ -36,7 +36,7 @@ module.exports = {
 
   compilers: {
     solc: {
-      version: "0.5.16",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.0",    // Fetch exact version from solc-bin (default: truffle's version)
       settings: {          // See the solidity docs for advice about optimization and evmVersion
        optimizer: {
          enabled: true,
@@ -47,7 +47,7 @@ module.exports = {
   },
 
   plugins: ['truffle-plugin-verify'],
-  
+
   api_keys: {
     etherscan: process.env.etherscan_api_key,
     bscscan: process.env.bscscan_api_key,
