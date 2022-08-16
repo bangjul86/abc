@@ -116,7 +116,7 @@ This is an example of how to list things you need to use the software and how to
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/rafiulhc/bedrock-staking
+   git clone https://github.com/rafiulhc/crypto-staking-smart-contract.git
    ```
 2. Install NPM packages
    ```sh
@@ -186,7 +186,7 @@ Rafiul Hasan - [Linkedin](https://www.linkedin.com/in/hrafiul/)
                [Twitter](https://twitter.com/r_hasan_c)
                - rafiul.hasan.chowdhury@gmail.com
 
-Project Link: [https://github.com/rafiulhc/bedrock-staking](https://github.com/rafiulhc/bedrock-staking)
+Project Link: [https://github.com/rafiulhc/crypto-staking-smart-contract.git](https://github.com/rafiulhc/crypto-staking-smart-contract.git
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
